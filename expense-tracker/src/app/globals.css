@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --background: lab(96.286% -.852466 -2.46847);;
+  --foreground: #171717;
+}
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Inter, Helvetica, sans-serif;
+}
