@@ -97,12 +97,15 @@ export default function Home() {
               type="number"
               placeholder="₹ 0.00"
               value={formData.amount}
+              min="0.01"
+              step="0.01"
               onChange={(e) =>
                 setFormData({ ...formData, amount: e.target.value })
               }
               className="w-full border rounded-lg px-4 py-2"
               required
             />
+
 
             <select
               value={formData.category}
@@ -280,10 +283,10 @@ export default function Home() {
             </div>
           ))}
         </div>
-       
+
       </div>
       {expenses?.length > 0 && <div className="col-span-12 space-y-6">
-         {/* Spending by Category */}
+        {/* Spending by Category */}
         <div className="bg-white rounded-xl shadow p-6">
           <h3 className="font-semibold mb-4">Spending by Category</h3>
 
