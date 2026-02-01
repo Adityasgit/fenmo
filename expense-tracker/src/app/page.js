@@ -6,10 +6,16 @@ import {
   calculateTotal,
   spendingByCategory,
 } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const sort = searchParams.get("sort") || "date_desc";
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -19,14 +25,15 @@ export default function Home() {
   });
 
   const getExpenses = async () => {
-    const res = await fetch("/api/expenses");
+    const res = await fetch(`/api/expenses?${searchParams.toString()}`);
     const data = await res.json();
     setExpenses(data);
   };
 
+
   useEffect(() => {
     getExpenses();
-  }, []);
+  }, [searchParams.toString()]);
 
   const submitExpense = async (e) => {
     e.preventDefault();
@@ -74,75 +81,130 @@ export default function Home() {
           {/* beautful hr */}
           <hr className="my-4 border-slate-200" />
 
-        <div className="mt-4 text-sm text-slate-400">
-          Developed by Aditya Arora | <a href="mailto:aditya.arora.works@gmail.com" className="underline">Contact Me</a>
-        </div>
-        {/* github repo */}
-        <div className="mt-2 text-sm text-slate-400">
-          <a href="https://github.com/Adityasgit/fenmo" className="underline">GitHub Repository</a>
+          <div className="mt-4 text-sm text-slate-400">
+            Developed by Aditya Arora | <a href="mailto:aditya.arora.works@gmail.com" className="underline">Contact Me</a>
           </div>
-    </div>
+          {/* github repo */}
+          <div className="mt-2 text-sm text-slate-400">
+            <a href="https://github.com/Adityasgit/fenmo" className="underline">GitHub Repository</a>
+          </div>
+        </div>
         <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-6">＋ Add Expense</h2>
+          <h2 className="text-lg font-semibold mb-6">＋ Add Expense</h2>
 
-        <form onSubmit={submitExpense} className="space-y-4">
-          <input
-            type="number"
-            placeholder="₹ 0.00"
-            value={formData.amount}
-            onChange={(e) =>
-              setFormData({ ...formData, amount: e.target.value })
-            }
-            className="w-full border rounded-lg px-4 py-2"
-            required
-          />
+          <form onSubmit={submitExpense} className="space-y-4">
+            <input
+              type="number"
+              placeholder="₹ 0.00"
+              value={formData.amount}
+              onChange={(e) =>
+                setFormData({ ...formData, amount: e.target.value })
+              }
+              className="w-full border rounded-lg px-4 py-2"
+              required
+            />
 
-          <select
-            value={formData.category}
-            onChange={(e) =>
-              setFormData({ ...formData, category: e.target.value })
-            }
-            className="w-full border rounded-lg px-4 py-2"
-          >
-            <option>Food & Dining</option>
-            <option>Travel</option>
-            <option>Shopping</option>
-            <option>Utilities</option>
-          </select>
+            <select
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              className="w-full border rounded-lg px-4 py-2"
+            >
+              <option>Food & Dining</option>
+              <option>Travel</option>
+              <option>Shopping</option>
+              <option>Utilities</option>
+            </select>
 
-          <input
-            type="text"
-            placeholder="What did you spend on?"
-            value={formData.description}
-            onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
-            }
-            className="w-full border rounded-lg px-4 py-2"
-            required
-          />
+            <input
+              type="text"
+              placeholder="What did you spend on?"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              className="w-full border rounded-lg px-4 py-2"
+              required
+            />
 
-          <input
-            type="date"
-            value={formData.date}
-            onChange={(e) =>
-              setFormData({ ...formData, date: e.target.value })
-            }
-            className="w-full border rounded-lg px-4 py-2"
-            required
-          />
+            <input
+              type="date"
+              value={formData.date}
+              max={new Date().toISOString().split("T")[0]}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
+              className="w-full border rounded-lg px-4 py-2"
+              required
+            />
 
-          <button
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700"
-          >
-            {loading ? "Adding..." : "Add Expense"}
-          </button>
-        </form>
+
+            <button
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700"
+            >
+              {loading ? "Adding..." : "Add Expense"}
+            </button>
+          </form>
         </div>
       </div>
 
       {/* Right Section */}
       <div className="col-span-12 md:col-span-8 space-y-6">
+        {/* filters for category, date */}
+
+        <div className="bg-white rounded-xl shadow p-4 flex flex-wrap items-center gap-4">
+          <span className="font-medium text-sm">Filter by:</span>
+
+          {/* Category Filter */}
+          <select
+            value={searchParams.get("category") || "all"}
+            onChange={(e) => {
+              const params = new URLSearchParams(searchParams.toString());
+              const value = e.target.value;
+
+              if (value === "all") {
+                params.delete("category");
+              } else {
+                params.set("category", value);
+              }
+
+              router.push(`/?${params.toString()}`);
+            }}
+            className="border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="all">All Categories</option>
+            <option value="Food & Dining">Food & Dining</option>
+            <option value="Travel">Travel</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Utilities">Utilities</option>
+          </select>
+
+          {/* Date Filter */}
+          <select
+            value={searchParams.get("date") || "all"}
+            onChange={(e) => {
+              const params = new URLSearchParams(searchParams.toString());
+              const value = e.target.value;
+
+              if (value === "all") {
+                params.delete("date");
+              } else {
+                params.set("date", value);
+              }
+
+              router.push(`/?${params.toString()}`);
+            }}
+            className="border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+          </select>
+        </div>
+
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-6">
@@ -157,29 +219,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Spending by Category */}
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold mb-4">Spending by Category</h3>
-
-          {Object.entries(categoryTotals).map(([cat, value]) => (
-            <div key={cat} className="mb-3">
-              <div className="flex justify-between text-sm mb-1">
-                <span>{cat}</span>
-                <span>₹{value.toFixed(2)}</span>
-              </div>
-              <div className="h-2 bg-slate-200 rounded">
-                <div
-                  className="h-2 bg-indigo-600 rounded"
-                  style={{ width: `${(value / maxCategoryValue) * 100}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
         {/* Recent Expenses (Grouped by Date) */}
         <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold mb-4">Recent Expenses</h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold">Recent Expenses</h3>
+
+            <select
+              value={sort}
+              onChange={(e) => {
+                const value = e.target.value;
+                router.push(`/?sort=${value}`);
+              }}
+              className="border rounded-lg px-3 py-1.5 text-sm"
+            >
+              <option value="date_desc">Latest</option>
+              <option value="date_asc">Earliest</option>
+            </select>
+          </div>
 
           {Object.keys(grouped).length === 0 && (
             <p className="text-slate-500 text-center py-8">
@@ -190,7 +246,11 @@ export default function Home() {
           {Object.entries(grouped).map(([date, list]) => (
             <div key={date} className="mb-6">
               <div className="flex justify-between text-sm font-medium mb-3">
-                <span>{date}</span>
+                <span>{new Date(date).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })}</span>
                 <span>
                   ₹
                   {list.reduce((s, e) => s + e.amount, 0).toFixed(2)}
@@ -217,6 +277,28 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          ))}
+        </div>
+       
+      </div>
+      <div className="col-span-12 space-y-6">
+         {/* Spending by Category */}
+        <div className="bg-white rounded-xl shadow p-6">
+          <h3 className="font-semibold mb-4">Spending by Category</h3>
+
+          {Object.entries(categoryTotals).map(([cat, value]) => (
+            <div key={cat} className="mb-3">
+              <div className="flex justify-between text-sm mb-1">
+                <span>{cat}</span>
+                <span>₹{value.toFixed(2)}</span>
+              </div>
+              <div className="h-2 bg-slate-200 rounded">
+                <div
+                  className="h-2 bg-indigo-600 rounded"
+                  style={{ width: `${(value / maxCategoryValue) * 100}%` }}
+                />
+              </div>
             </div>
           ))}
         </div>
