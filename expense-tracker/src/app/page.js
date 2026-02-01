@@ -282,7 +282,7 @@ export default function Home() {
         </div>
        
       </div>
-      <div className="col-span-12 space-y-6">
+      {expenses?.length > 0 && <div className="col-span-12 space-y-6">
          {/* Spending by Category */}
         <div className="bg-white rounded-xl shadow p-6">
           <h3 className="font-semibold mb-4">Spending by Category</h3>
@@ -302,7 +302,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
     </main>
   );
 }
